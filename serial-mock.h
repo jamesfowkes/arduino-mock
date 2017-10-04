@@ -32,4 +32,12 @@ class HardwareSerial : public _Serial
 extern _Serial Serial;
 extern HardwareSerial Serial1;
 
+unsigned long millis();
+unsigned long micros();
+
+void arduino_mock_init();
+
+void quit_mock();
+void run_mock();
+
 #endif

@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <ctime>
 #include <map>
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -23,11 +24,19 @@ static ptree s_mock_properties;
 extern void setup();
 extern void loop();
 
+static std::map<int, int> s_pin_mode_map;
+static std::map<int, int> s_digital_write_map;
+
+static bool s_quit_mock = false;
+
 _Serial Serial;
 HardwareSerial Serial1;
 
-size_t Stream::print(unsigned char to_print) { std::cout << (char)to_print << std::flush; return 1; }
-size_t Stream::print(const char * to_print) { std::cout << to_print << std::flush; return strlen(to_print); }
+extern void setup();
+extern void loop();
+
+size_t Stream::print(unsigned char to_print) { std::cout << std::setfill('0') << std::setw(2) << std::hex << (int)to_print; return 0;}
+size_t Stream::print(const char * to_print) { std::cout << to_print; return 0;}
 
 size_t Stream::write(unsigned char to_write) { std::cout << (char)to_write << std::flush; return 1; }
 size_t Stream::write(const char * to_write) { std::cout << to_write << std::flush; return strlen(to_write); }
@@ -37,7 +46,7 @@ size_t Stream::println(const char * to_print) { std::cout << to_print << std::en
 
 void digitalWrite(int pin, int value)
 {
-	(void)pin;(void)value;
+	s_digital_write_map[pin] = value;
 }
 
 int analogRead(int pin)
@@ -98,21 +107,22 @@ void arduino_mock_init()
 	setup();
 }
 
-void arduino_mock_quit()
+void pinMode(int pin, int mode)
 {
-	s_quit = true;
+	s_pin_mode_map[pin] = mode;
 }
 
-void arduino_mock_run()
+void quit_mock()
 {
-	char message_buffer[256];
+	s_quit_mock = true;
+}
 
-	while (!s_quit)
+void run_mock()
+{
+	setup();
+	
+	while(!s_quit_mock)
 	{
-		if (ipc_read(message_buffer, 256))
-		{
-			
-		}
 		loop();
 	}
 }
